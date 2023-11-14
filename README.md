@@ -9,7 +9,7 @@ We are from BUPT.
 ### Requirements
 Run `pip install -r requirements.txt` in Llama-Factory for further finetuning.
 
-Install `langchain`, `sentence-transformers`, `gradio` and `streamlit` using pip optionally.
+Install `langchain`, `sentence-transformers`, `faiss-cpu`, `gradio` and `streamlit` using pip.
 
 ### Acknowledgements
 We spec thank for these projects
