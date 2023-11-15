@@ -1,0 +1,14 @@
+MODEL_NAME: gpt-3.5-turbo
+OPENAI_API_KEY: 
+SEARCHAPI_API_KEY: imVX1C2Dv5cw9xPGAD8GJVmW # free with limited usage
+
+WENSHU_DATASET_DIR: /projects/Project/wenshu_dataset/dev
+WENSHU_MODEL_DIR: /projects/chatglm3-6b-32k
+WENSHU_FT_CHECKPOINT_PATH: /projects/Project/chatglm3-6b-32k-wenshu-finetuned
+
+QA_DATASET_DIR: 
+QA_MODEL_DIR: /projects/chatglm3-6b-32k
+QA_FT_CHECKPOINT_PATH: 
+
+EMBEDDING_MODEL_NAME: /projects/Project/text2vec-large-chinese # GanymedeNil/text2vec-large-chinese
+VECTORSTORE_PATH: /projects/Project/local_knowledge
