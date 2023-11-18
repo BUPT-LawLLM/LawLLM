@@ -40,3 +40,6 @@ Install `langchain`, `sentence-transformers`, `faiss-cpu`, `gradio` and `streaml
 - Llama-Chinese
 - Llama-Factory
 - DISC-LawLLM
+
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->
