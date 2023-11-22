@@ -3,7 +3,7 @@ from IPython.display import display, clear_output
 
 def keywords_extract(prompt):
     
-    model_path = "/root/autodl-tmp/chatglm/ChatGLM2-6B/LoRA/keywords_extract"
+    model_path = "bupt/keywords_extract"
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     model = AutoModel.from_pretrained(model_path, trust_remote_code=True).quantize(4).half().cuda()
     model = model.eval()
