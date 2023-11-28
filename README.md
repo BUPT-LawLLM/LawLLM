@@ -45,5 +45,8 @@ Install `langchain`, `sentence-transformers`, `faiss-cpu`, `gradio` and `streaml
 - Llama-Factory
 - DISC-LawLLM
 
+### TODO
+- 对 keywords 文件夹中的工作进行合并，考虑参数融合或者混合训练
+
 <!-- readme: contributors -start -->
 <!-- readme: contributors -end -->
