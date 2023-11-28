@@ -4,10 +4,12 @@ import streamlit as st
 
 from evaluator import WenshuEvaluator, LawQAEvaluator
 from retriever import Retriever
+from extraction import extraction
 
 
 st.set_page_config(page_title="BUPT-LawLLM ⚖️")
-sidebar_options = {"法律咨询问答 👩🏻‍💼": "feature_1", "法律文书补全 📃": "feature_2", "相关法条检索 🔎": "feature_3"}
+sidebar_options = {"法律咨询问答 👩🏻‍💼": "feature_1", "法律文书补全 📃": "feature_2", "相关法条检索 🔎": "feature_3", 
+                   "问题关键词提取 🗝": "feature_4", "文书关键词提取 🗝": "feature_5"}
 st.sidebar.markdown("## BUPT-LawLLM ⚖️")
 st.sidebar.markdown("我是 BUPT 智能系统实验室基于 ChatGLM3 等开源 LLM 微调并设计的法律领域 AI 助手。")
 selected_option = st.sidebar.selectbox("", list(sidebar_options.keys()))
@@ -41,7 +43,6 @@ def init_chat_history():
 
     return st.session_state.messages
 
-
 def main():
     model, retriever = init_model()
     
@@ -59,7 +60,7 @@ def main():
             print(f"[user] {prompt}", flush=True)
             with st.chat_message("assistant", avatar="👩🏻‍💼"):
                 placeholder = st.empty()
-                responses = [model.model_generate("你是一个专业律师，如下是一个法律咨询问题："+message["content"]+"\n请根据相关法条和你的知识进行回答。你的回答：") for message in messages]
+                responses = [model.model_generate("如下是一个法律咨询问题："+message["content"]+"\n请根据相关法条和你的知识进行回答。你的回答：") for message in messages]
                 for response in responses:
                     placeholder.markdown(response)
                     if torch.backends.mps.is_available():
@@ -81,13 +82,16 @@ def main():
                 st.session_state.case = step
                 with st.chat_message("user", avatar="🧑🏻‍💻"):
                     st.markdown("已提供案件名称。")
+                # messages.append({"role": "user", "content": "已提供案件名称。"})
                 with st.chat_message("assistant", avatar="📃"):
                     st.markdown("好的，案件的指控部分说了什么？")
+                # messages.append({"role": "assistant", "content": "好的，案件的指控部分说了什么？"})
 
             elif (st.session_state.case) and (not st.session_state.judgeAccusation) and (not st.session_state.judgeReason):
                 st.session_state.judgeAccusation = step
                 with st.chat_message("user", avatar="🧑🏻‍💻"):
                     st.markdown("已提供指控部分。")
+                # messages.append({"role": "user", "content": "已提供指控部分。"})
                 with st.chat_message("assistant", avatar="📃"):
                     st.markdown("好的，那么法院给出的过程推理是怎样的？")
                 # messages.append({"role": "assistant", "content": "好的，那么法院给出的过程推理是怎样的？"})
@@ -136,6 +140,63 @@ def main():
             print(json.dumps(messages, ensure_ascii=False), flush=True)
             st.button("清空对话", on_click=clear_chat_history)
 
+    elif sidebar_options[selected_option] == "feature_4":
+        messages = init_chat_history()
+
+        if prompt := st.chat_input("Shift + Enter 换行，Enter 发送"):
+            with st.chat_message("user", avatar="🧑🏻‍💻"):
+                st.markdown(prompt)
+
+            messages.append({"role": "user", "content": prompt})
+            print(f"[user] {prompt}", flush=True)
+            with st.chat_message("assistant", avatar="🗝"):
+                placeholder = st.empty()
+                responses = [model.model_generate("如下是一个法律咨询问题："+message["content"]+"\n请根据上述内容，列出10个专业的相关法律关键词：") for message in messages]
+                for response in responses:
+                    placeholder.markdown(response)
+                    if torch.backends.mps.is_available():
+                        torch.mps.empty_cache()
+
+            messages.append({"role": "assistant", "content": response})
+            print(json.dumps(messages, ensure_ascii=False), flush=True)
+            st.button("清空对话", on_click=clear_chat_history)
+
+    elif sidebar_options[selected_option] == "feature_5":
+        messages = init_chat_history()
+        user_inputs = {'案发过程': '', '处理结果': ''}
+
+        if step := st.chat_input(f"Shift + Enter 换行，Enter 发送"):
+            if (not st.session_state.judgeAccusation) and (not st.session_state.judgeReason):
+                st.session_state.judgeAccusation = step
+                with st.chat_message("user", avatar="🧑🏻‍💻"):
+                    st.markdown("已提供指控部分（案发过程）。")
+                # messages.append({"role": "user", "content": "已提供指控部分。"})
+                with st.chat_message("assistant", avatar="🗝"):
+                    st.markdown("好的，那么法院给出的过程推理和处理结果是怎样的？")
+                # messages.append({"role": "assistant", "content": "好的，那么法院给出的过程推理是怎样的？"})
+
+            elif (st.session_state.judgeAccusation) and (not st.session_state.judgeReason):
+                st.session_state.judgeReason = step
+                prompt = {'案发过程': st.session_state.judgeAccusation, '处理结果': st.session_state.judgeReason}
+                # messages.append({"role": "user", "content": prompt})
+                # print(f"[user] {prompt}", flush=True)
+
+                with st.chat_message("assistant", avatar="🗝"):
+                    placeholder = st.empty()
+                    # responses = [extraction(model, message["content"]) for message in messages]
+                    response = extraction(model, prompt)
+                    # for response in responses:
+                    placeholder.markdown(response[0]+"\n"+response[1])
+                        # placeholder.markdown(response[1])
+
+                    if torch.backends.mps.is_available():
+                        torch.mps.empty_cache()
+
+                messages.append({"role": "assistant", "content": response})
+                print(json.dumps(messages, ensure_ascii=False), flush=True)
+                st.session_state.judgeAccusation, st.session_state.judgeReason = "", ""
+                st.button("清空对话", on_click=clear_chat_history)
+        
 
 if __name__ == "__main__":
     main()

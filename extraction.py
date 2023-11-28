@@ -9,13 +9,14 @@ import re
 import json
 import torch
 import pandas as pd
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers.generation.utils import GenerationConfig
-from rich import print
-from rich.console import Console
+# from transformers import AutoModelForCausalLM, AutoTokenizer
+# from transformers.generation.utils import GenerationConfig
+# from rich import print
+# from rich.console import Console
 from transformers import AutoTokenizer, AutoModel
 
-def extraction():
+
+def extraction(model, user_inputs: dict):
     
     IE_PATTERN = "{}\n\n提取上述句子中能够描述{}的实体，实体属性应该包括:{}，并将按照如同ie_examples一样的JSON格式输出，上述句子中不存在的信息用['原文未提及']来表示，多个值之间用','分隔。"
 
@@ -111,31 +112,33 @@ def extraction():
         custom_settings (dict): 初始设定，包含人为给定的 few-shot example。
     """
     #用户输入文本‘案发过程’和‘处理结果’作为模型的输入
-    user_inputs = {'案发过程': '', '处理结果': ''}
+    # user_inputs = {'案发过程': '', '处理结果': ''}
 
-    for i in range(len(user_inputs.keys())):
-        user_input = ''
-        while True:
-            line = input(f'请输入{list(user_inputs.keys())[i]}（按回车结束输入）: ')
-            if not line:  # 如果用户输入为空（按下回车），结束循环
-                break
-            user_input += line + '\n'
+    # for i in range(len(user_inputs.keys())):
+    #     user_input = ''
+    #     while True:
+    #         line = input(f'请输入{list(user_inputs.keys())[i]}（按回车结束输入）: ')
+    #         if not line:  # 如果用户输入为空（按下回车），结束循环
+    #             break
+    #         user_input += line + '\n'
 
-        user_inputs[list(user_inputs.keys())[i]] = user_input.strip()  # 去除多余的换行符
+    #     user_inputs[list(user_inputs.keys())[i]] = user_input.strip()  # 去除多余的换行符
 
     #不用input 直接给函数加两个参数text1和text2分别代表输入的案发过程和处理结果的文本时：
     #user_inputs = {'案发过程': text1, '处理结果': text2}
 
     responses = []
-    for key, value in user_inputs.items():
-        with console.status("[bold bright_green] Model Inference..."):
-            sentence_with_ie_prompt = IE_PATTERN.format(value,key,schema[key])
-            print(sentence_with_ie_prompt)
+    for key, value in dict(user_inputs).items():
+        # with console.status("[bold bright_green] Model Inference..."):
+        sentence_with_ie_prompt = IE_PATTERN.format(value,key,schema[key])
+            # print(sentence_with_ie_prompt)
 
-            ie_res, _ = model.chat(tokenizer, sentence_with_ie_prompt, history=ie_pre_history)
-        print(f'>>> [bold bright_red]sentence: {value}')
-        print(f'>>> [bold bright_green]inference answer: ')
-        print(ie_res)
+            # ie_res, _ = model.chat(tokenizer, sentence_with_ie_prompt, history=ie_pre_history)
+
+        ie_res = model.model_generate(sentence_with_ie_prompt)
+        # print(f'>>> [bold bright_red]sentence: {value}')
+        # print(f'>>> [bold bright_green]inference answer: ')
+        # print(ie_res)
         responses.append(ie_res)
     
     return responses 
