@@ -26,6 +26,10 @@ https://huggingface.co/datasets/bupt/LawDataset-BUPT
 
 https://huggingface.co/bupt/chatglm3-6b-32k-wenshu-finetuned
 
+法律法条数据向量库基于开源项目 tigerbot 制作，如下是链接🔗。
+
+https://huggingface.co/datasets/Jinsns/tiger_laws
+
 ### Requirements
 
 Run `pip install -r requirements.txt` in Llama-Factory for further finetuning.
